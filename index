@@ -1,0 +1,2634 @@
+<!-- start SEKTION 1: RECEPTAPP BYGGBANK MED URL-IMPORT -->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receptförenklare</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --panel:#ffffff;
+      --line:#d9e0ec;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#2f6fed;
+      --accent-soft:#eaf1ff;
+      --soft:#f8fbff;
+      --danger:#8b1e1e;
+      --ok:#0f766e;
+      --ok-soft:#ecfdf5;
+      --warn-soft:#fff7ed;
+      --shadow:0 10px 30px rgba(22,34,51,.08);
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .app{
+      max-width:1400px;
+      margin:0 auto;
+      padding:12px;
+    }
+
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .title-wrap h1{
+      margin:0 0 2px 0;
+      font-size:23px;
+    }
+
+    .title-wrap p{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .preview-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+      margin-bottom:8px;
+    }
+
+    button{
+      border:none;
+      border-radius:10px;
+      padding:9px 12px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      background:#111827;
+      color:#fff;
+    }
+
+    button.secondary{
+      background:#fff;
+      color:#111827;
+      border:1px solid var(--line);
+    }
+
+    button.accent{
+      background:var(--accent);
+    }
+
+    button.soft{
+      background:#eef4ff;
+      color:#1246b9;
+      border:1px solid #cfe0ff;
+    }
+
+    button.warn{
+      background:var(--danger);
+      color:#fff;
+    }
+
+    button.ghost{
+      background:#fff;
+      color:#111827;
+      border:1px solid var(--line);
+      padding:4px 6px;
+      font-size:10px;
+      border-radius:8px;
+    }
+
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    input[type="text"], textarea, select, input[type="number"], input[type="url"]{
+      width:100%;
+      padding:10px 11px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      font-size:13px;
+      background:#fff;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    textarea{
+      min-height:130px;
+      resize:vertical;
+      line-height:1.35;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:10px;
+    }
+
+    .panel h2{
+      margin:0 0 8px 0;
+      font-size:17px;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .import-grid{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      align-items:start;
+    }
+
+    .import-actions{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:190px;
+    }
+
+    .url-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      align-items:end;
+      margin-bottom:8px;
+    }
+
+    .status-box{
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:12px;
+      line-height:1.3;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+    }
+
+    .status-box.ok{
+      background:var(--ok-soft);
+      border-color:#a7f3d0;
+      color:var(--ok);
+    }
+
+    .status-box.warn{
+      background:var(--warn-soft);
+      border-color:#fdba74;
+      color:#9a3412;
+    }
+
+    .workspace{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:10px;
+      align-items:start;
+    }
+
+    .workspace-left{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .workspace-topbar,
+    .bank-topbar,
+    .saved-topbar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      gap:6px;
+      margin-bottom:8px;
+    }
+
+    .bank-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .drop-block h3,
+    .bank-block h3,
+    .step-preview-box h3,
+    .special-box h3{
+      margin:0 0 6px 0;
+      font-size:13px;
+      color:#374151;
+    }
+
+    .dropzone{
+      min-height:52px;
+      border:2px dashed #b7c5e5;
+      border-radius:12px;
+      background:#fbfcff;
+      padding:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:flex-start;
+      transition:.15s ease;
+    }
+
+    .dropzone.active{
+      background:#eef4ff;
+      border-color:var(--accent);
+    }
+
+    .dropzone-empty{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.15;
+      padding:1px;
+    }
+
+    .bank-columns{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .bank-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      min-height:34px;
+      padding:1px 0;
+    }
+
+    .bank-card,
+    .assigned-card{
+      display:inline-flex;
+      align-items:flex-start;
+      gap:5px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:11px;
+      padding:5px 7px;
+      max-width:100%;
+    }
+
+    .bank-card{
+      cursor:grab;
+      user-select:none;
+    }
+
+    .bank-card.ingredient-card{ background:#fdfdfd; }
+    .bank-card.instruction-card{ background:#f8fbff; }
+
+    .assigned-card{
+      border-color:#cfe0ff;
+      background:#fff;
+      flex-direction:column;
+      min-width:140px;
+      max-width:180px;
+      align-items:center;
+      padding:5px 6px;
+    }
+
+    .assigned-main{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .assigned-extra{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      margin-top:3px;
+      align-items:center;
+    }
+
+    .assigned-split-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:4px;
+      width:100%;
+    }
+
+    .assigned-split-select{
+      font-size:11px;
+      padding:5px 6px;
+    }
+
+    .assigned-remainder{
+      font-size:10px;
+      color:#1246b9;
+      background:#eef4ff;
+      border:1px solid #cfe0ff;
+      border-radius:8px;
+      padding:5px 6px;
+      line-height:1.15;
+      text-align:center;
+      width:100%;
+    }
+
+    .icon-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:var(--accent-soft);
+      font-size:11px;
+      border:1px solid #cfe0ff;
+      flex:0 0 20px;
+      overflow:hidden;
+    }
+
+    .icon-chip svg{
+      width:14px;
+      height:14px;
+      display:block;
+      stroke:#1246b9;
+      fill:none;
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .icon-chip svg .fill{
+      fill:#1246b9;
+      stroke:none;
+    }
+
+    .card-text{
+      min-width:0;
+      text-align:center;
+      flex:1 1 auto;
+      width:100%;
+    }
+
+    .card-text strong{
+      display:block;
+      font-size:11px;
+      word-break:break-word;
+      line-height:1.1;
+    }
+
+    .card-text span{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      margin-top:1px;
+      word-break:break-word;
+      line-height:1.1;
+    }
+
+    .assigned-controls{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      margin-left:0;
+      flex:0 0 auto;
+      width:100%;
+    }
+
+    .remove-assigned{
+      background:#fff;
+      color:var(--danger);
+      border:1px solid #efc3c3;
+      padding:4px 6px;
+      font-size:9px;
+      border-radius:8px;
+      flex:0 0 auto;
+    }
+
+    .builder-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+    }
+
+    .custom-instruction-box{
+      margin-top:8px;
+    }
+
+    .custom-instruction-box label,
+    .special-grid label{
+      display:block;
+      margin-bottom:4px;
+      font-size:12px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .special-box{
+      margin-top:8px;
+      padding:8px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--soft);
+    }
+
+    .special-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .step-preview-box{
+      margin-top:8px;
+      padding:6px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--soft);
+    }
+
+    .step-preview-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:5px 6px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 16px auto;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      width:100%;
+      max-width:320px;
+      margin:0 auto;
+      text-align:center;
+    }
+
+    .step-preview-left{
+      min-width:0;
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+    }
+
+    .step-preview-left ul{
+      margin:0;
+      padding-left:0;
+      list-style-position:inside;
+      display:inline-block;
+      text-align:center;
+    }
+
+    .step-preview-left li{
+      margin:1px 0;
+      font-size:11px;
+      line-height:1.1;
+      text-align:center;
+    }
+
+    .step-preview-link{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#4b6fcb;
+      font-weight:700;
+      font-size:13px;
+      line-height:1;
+      width:100%;
+    }
+
+    .step-preview-right{
+      background:var(--accent-soft);
+      border:1px solid #cfe0ff;
+      border-radius:8px;
+      padding:5px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      width:max-content;
+      max-width:none;
+      margin:0 auto;
+      white-space:nowrap;
+    }
+
+    .instruction-line{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.05;
+      text-align:center;
+      width:100%;
+      white-space:nowrap;
+      flex-wrap:nowrap;
+    }
+
+    .instruction-line span:last-child{
+      white-space:nowrap;
+    }
+
+    .small-note{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.2;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:6px 8px;
+      border-radius:10px;
+      background:#eef4ff;
+      border:1px solid #cfe0ff;
+      font-size:12px;
+      font-weight:700;
+      color:#1246b9;
+    }
+
+    .saved-steps{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .saved-step-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      padding:6px;
+    }
+
+    .saved-step-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:6px;
+      margin-bottom:4px;
+    }
+
+    .saved-step-title{
+      font-size:11px;
+      font-weight:800;
+      color:#374151;
+    }
+
+    .saved-step-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+    }
+
+    .mini-btn{
+      padding:5px 6px;
+      border-radius:8px;
+      font-size:10px;
+      font-weight:700;
+    }
+
+    .mini-btn.secondary{
+      background:#fff;
+      color:#111827;
+      border:1px solid var(--line);
+    }
+
+    .recipe-title-card{
+      margin-bottom:8px;
+      padding:6px 8px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+
+    .recipe-title-card h3{
+      margin:0;
+      font-size:18px;
+      line-height:1.1;
+      text-align:center;
+    }
+
+    .recipe-preview{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      align-items:center;
+    }
+
+    .preview-step{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:5px 6px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 16px auto;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      width:100%;
+      max-width:320px;
+      margin:0 auto;
+      text-align:center;
+    }
+
+    .preview-ingredients{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      width:100%;
+    }
+
+    .preview-ingredients ul{
+      margin:0;
+      padding-left:0;
+      list-style-position:inside;
+      display:inline-block;
+      text-align:center;
+    }
+
+    .preview-ingredients li{
+      margin:1px 0;
+      font-size:11px;
+      line-height:1.1;
+      text-align:center;
+    }
+
+    .preview-arrow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#4b6fcb;
+      font-size:13px;
+      font-weight:700;
+      line-height:1;
+      width:100%;
+    }
+
+    .preview-instruction{
+      background:var(--accent-soft);
+      border:1px solid #cfe0ff;
+      border-radius:8px;
+      padding:5px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      width:max-content;
+      max-width:none;
+      margin:0 auto;
+      white-space:nowrap;
+      min-width:120px;
+    }
+
+    .preview-empty{
+      padding:10px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      color:var(--muted);
+      background:#fff;
+      font-size:12px;
+    }
+
+    @media (max-width:1150px){
+      .workspace{
+        grid-template-columns:1fr;
+      }
+
+      .special-grid,
+      .url-row,
+      .assigned-split-row{
+        grid-template-columns:1fr;
+      }
+
+      .step-preview-card,
+      .preview-step{
+        max-width:320px;
+      }
+
+      .import-grid{
+        grid-template-columns:1fr;
+      }
+
+      .import-actions{
+        min-width:auto;
+      }
+    }
+
+    @media print{
+      @page{
+        margin:10mm;
+      }
+
+      html, body{
+        background:#fff !important;
+      }
+
+      body *{
+        visibility:hidden !important;
+      }
+
+      .preview-panel,
+      .preview-panel *{
+        visibility:visible !important;
+      }
+
+      .preview-panel{
+        position:absolute;
+        left:0;
+        top:0;
+        width:100%;
+        background:#fff;
+        border:none !important;
+        box-shadow:none !important;
+        padding:0 !important;
+        margin:0 !important;
+      }
+
+      .preview-panel h2,
+      .preview-toolbar{
+        display:none !important;
+      }
+
+      .recipe-title-card{
+        border:none !important;
+        box-shadow:none !important;
+        padding:0 0 6px 0 !important;
+        margin:0 0 6px 0 !important;
+      }
+
+      .recipe-title-card h3{
+        font-size:16px !important;
+      }
+
+      .recipe-preview{
+        gap:4px !important;
+        align-items:center !important;
+      }
+
+      .preview-step{
+        break-inside:avoid;
+        border:1px solid #bbb !important;
+        border-radius:10px !important;
+        padding:5px 6px !important;
+        margin:0 0 4px 0 !important;
+        width:100% !important;
+        max-width:280px !important;
+        gap:5px !important;
+        grid-template-columns:minmax(0,1fr) 12px 110px !important;
+      }
+
+      .preview-ingredients ul{
+        padding-left:0 !important;
+        list-style-position:inside !important;
+      }
+
+      .preview-ingredients li{
+        font-size:10px !important;
+        margin:1px 0 !important;
+        line-height:1.05 !important;
+      }
+
+      .preview-arrow{
+        display:flex !important;
+        font-size:11px !important;
+      }
+
+      .preview-instruction{
+        padding:4px 6px !important;
+        gap:2px !important;
+        border-radius:8px !important;
+        width:110px !important;
+        min-width:110px !important;
+        max-width:110px !important;
+        white-space:nowrap !important;
+        overflow:hidden !important;
+      }
+
+      .instruction-line{
+        font-size:10px !important;
+        gap:3px !important;
+        line-height:1.05 !important;
+        width:100% !important;
+        justify-content:center !important;
+      }
+
+      .icon-chip{
+        width:16px !important;
+        height:16px !important;
+        min-width:16px !important;
+        font-size:9px !important;
+      }
+
+      .icon-chip svg{
+        width:11px !important;
+        height:11px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Receptförenklare</h1>
+        <p>Importera till byggbanken, bygg ett steg i taget och spara det till receptet.</p>
+      </div>
+      <div class="toolbar">
+        <button id="printBtn" class="secondary">🖨️ Printa ut</button>
+        <button id="saveRecipeBtn" class="accent">💾 Spara recept</button>
+        <button id="resetRecipeBtn" class="warn">🗑️ Nytt recept</button>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="panel">
+        <h2>Rubrik</h2>
+        <input id="recipeTitleInput" type="text" placeholder="Skriv receptets rubrik här, t.ex. Pannkakor" />
+      </div>
+
+      <div class="panel import-panel">
+        <h2>Importera recept</h2>
+
+        <div class="url-row">
+          <div>
+            <input id="recipeUrlInput" type="url" placeholder="Klistra in receptlänk här, t.ex. https://www.ica.se/recept/..." />
+          </div>
+          <button id="importUrlBtn" class="accent">Importera från länk</button>
+        </div>
+
+        <div id="urlImportStatus" class="status-box">Ingen länk importerad ännu.</div>
+
+        <div class="import-grid" style="margin-top:8px;">
+          <div>
+            <textarea id="importText" placeholder="Klistra in recept här. Appen lägger importerade ingredienser i byggbanken till höger."></textarea>
+            <div class="small-note">
+              Tips: klistra in hela receptet. Dra sedan över rätt ingredienser till arbetsytan och välj instruktioner från byggbanken.
+            </div>
+          </div>
+          <div class="import-actions">
+            <button id="parseRecipeBtn" class="accent">Tolka till byggbank</button>
+            <button id="importIngredientsBtn" class="soft">Bara ingredienser</button>
+            <button id="clearImportBtn" class="secondary">Rensa importfält</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="workspace">
+        <div class="workspace-left">
+          <div class="panel builder-panel">
+            <div class="workspace-topbar">
+              <h2>Bygg aktuellt steg här</h2>
+              <div class="status-chip">Arbetsyta för nästa steg</div>
+            </div>
+
+            <div class="drop-block">
+              <h3>Ingrediensgrupp</h3>
+              <div id="builderIngredientZone" class="dropzone"></div>
+            </div>
+
+            <div class="drop-block" style="margin-top:8px;">
+              <h3>Instruktion med bildstöd</h3>
+              <div id="builderInstructionZone" class="dropzone"></div>
+            </div>
+
+            <div class="custom-instruction-box">
+              <label for="builderCustomInstruction">Kort egen stegtext</label>
+              <input id="builderCustomInstruction" type="text" placeholder="Skriv en mycket kort förklarande text här">
+            </div>
+
+            <div id="builderSpecialHost"></div>
+
+            <div id="builderPreviewHost" class="step-preview-box"></div>
+
+            <div class="builder-actions">
+              <button id="saveStepBtn" class="accent">Spara till recept</button>
+              <button id="clearBuilderBtn" class="secondary">Rensa arbetsyta</button>
+            </div>
+          </div>
+
+          <div class="panel saved-panel">
+            <div class="saved-topbar">
+              <h2>Sparade steg i receptet</h2>
+            </div>
+            <div id="savedSteps" class="saved-steps"></div>
+          </div>
+        </div>
+
+        <div class="panel bank-panel">
+          <div class="bank-topbar">
+            <h2>Byggbank</h2>
+            <div class="bank-toolbar">
+              <button id="clearBankBtn" class="warn">Rensa byggbank</button>
+            </div>
+          </div>
+
+          <div class="bank-columns">
+            <div class="bank-block">
+              <h3>Importerade ingredienser</h3>
+              <div id="ingredientBank" class="bank-list"></div>
+              <div class="small-note">Dra ingredienser härifrån till arbetsytan.</div>
+            </div>
+
+            <div class="bank-block">
+              <h3>Instruktioner med bildstöd</h3>
+              <div id="instructionBank" class="bank-list"></div>
+              <div class="small-note">Välj instruktioner härifrån. URL-importen fyller inte på steg längre.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel preview-panel">
+        <div class="preview-toolbar">
+          <button id="printBtnBottom" class="secondary">🖨️ Printa ut</button>
+          <button id="saveRecipeBtnBottom" class="accent">💾 Spara recept</button>
+          <button id="resetRecipeBtnBottom" class="warn">🗑️ Nytt recept</button>
+        </div>
+        <h2>Elevversion</h2>
+        <div id="recipeTitlePreview"></div>
+        <div id="recipePreview" class="recipe-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const customSvgIcons = {
+      "svg-varma": `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.5 12h13"/>
+          <path d="M5 12v4c0 1.7 1.3 3 3 3h4c1.7 0 3-1.3 3-3v-4"/>
+          <path d="M16.5 13h3"/>
+          <path d="M8 7c0-.9.6-1.4.6-2.2"/>
+          <path d="M11 6c0-.9.6-1.4.6-2.2"/>
+          <path d="M14 7c0-.9.6-1.4.6-2.2"/>
+        </svg>
+      `,
+      "svg-vanda-in": `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 17c0-2.2 2.5-3.8 6-3.8s6 1.6 6 3.8"/>
+          <path d="M6 17c0 1.8 2.5 3.2 6 3.2s6-1.4 6-3.2"/>
+          <path d="M8 5l8 8"/>
+          <path d="M7 6l2-2"/>
+          <path d="M14.5 11.5l2.5-2.5"/>
+        </svg>
+      `,
+      "svg-broda": `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="7" width="14" height="11" rx="2"/>
+          <path d="M7 7l1.5-2h7L17 7"/>
+        </svg>
+      `,
+      "svg-riva": `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5.4 5.1l2.2-2.1"/>
+          <path d="M7.6 3l3.8 3.8"/>
+          <path d="M10.7 6.6l7.1 7.1"/>
+          <path d="M9.8 7.5l6.4 6.4"/>
+          <path d="M8.7 6.4c-.7.7-.7 1.9 0 2.6l6.3 6.3c.7.7 1.9.7 2.6 0"/>
+          <path d="M11.8 9.1l.8.8"/>
+          <path d="M13.3 10.6l.8.8"/>
+          <path d="M14.8 12.1l.8.8"/>
+          <path d="M16.3 13.6l.8.8"/>
+          <path d="M18.4 16.8l1.4 1.4"/>
+          <path d="M17 18.2l1.1 1.1"/>
+          <path d="M19.4 14.8l1.3 1.3"/>
+        </svg>
+      `
+    };
+
+    const defaultInstructionLibrary = [
+      { id: "lib-hall-i", type: "instruction", icon: "🫗", label: "Häll i", help: "lägg i ingrediens", source: "fixed" },
+      { id: "lib-vispa", type: "instruction", icon: "🥣", label: "Vispa", help: "vispa ihop", source: "fixed" },
+      { id: "lib-blanda", type: "instruction", icon: "🥄", label: "Blanda i bunke", help: "blanda ihop", source: "fixed" },
+      { id: "lib-varma-gryta", type: "instruction", icon: "svg-varma", label: "Värma i gryta", help: "värm i gryta", source: "fixed" },
+      { id: "lib-till-temp", type: "instruction", icon: "🌡️", label: "Till temperatur", help: "värm till temperatur", source: "fixed" },
+      { id: "lib-vanda-slickepott", type: "instruction", icon: "svg-vanda-in", label: "Vända in", help: "vänd försiktigt", source: "fixed" },
+      { id: "lib-broda-form", type: "instruction", icon: "svg-broda", label: "Bröda", help: "bröa formen", source: "fixed" },
+      { id: "lib-skara", type: "instruction", icon: "🔪", label: "Skära", help: "skär i bitar", source: "fixed" },
+      { id: "lib-riva", type: "instruction", icon: "svg-riva", label: "Riva", help: "riv fint eller grovt", source: "fixed" },
+      { id: "lib-stek", type: "instruction", icon: "🍳", label: "Stek", help: "stek i panna", source: "fixed" },
+      { id: "lib-fritera", type: "instruction", icon: "🍤", label: "Fritera", help: "fritera i olja", source: "fixed" },
+      { id: "lib-koka", type: "instruction", icon: "♨️", label: "Koka", help: "koka i gryta", source: "fixed" },
+      { id: "lib-baka", type: "instruction", icon: "🧁", label: "Baka", help: "baka i ugn", source: "fixed" },
+      { id: "lib-servera", type: "instruction", icon: "🍽️", label: "Servera", help: "lägg upp och servera", source: "fixed" },
+      { id: "lib-ugn", type: "instruction", icon: "🔥", label: "Ställ in i ugnen", help: "in i ugnen", source: "fixed" },
+      { id: "lib-bunke", type: "instruction", icon: "🥣", label: "Bunke", help: "lägg i bunke", source: "fixed" },
+      { id: "lib-kastrull", type: "instruction", icon: "🍲", label: "Kastrull", help: "lägg i kastrull", source: "fixed" },
+      { id: "lib-form", type: "instruction", icon: "🍱", label: "Form", help: "lägg i form", source: "fixed" },
+      { id: "lib-vila", type: "instruction", icon: "⏱️", label: "Vila", help: "låt vila", source: "fixed" }
+    ];
+
+    const alwaysAvailableIngredients = [
+      "Margarin / olja för stekning"
+    ];
+
+    const blockedIngredientPhrases = [
+      "lägg till i inköpslista",
+      "ha med dig inköpslistan överallt med ica-appen",
+      "läs mer om ica-appen",
+      "för alla",
+      "klimatanpassa",
+      "gör glutenfri",
+      "gör laktosfri",
+      "gör mjölkproteinfri",
+      "gör äggfri",
+      "gör mer klimaträtt",
+      "detta leder till en 40% minskning av klimatpåverkan från maträtten"
+    ];
+
+    const unitSystems = {
+      volume: {
+        l: 1000,
+        dl: 100,
+        ml: 1,
+        msk: 15,
+        tsk: 5,
+        krm: 1
+      },
+      weight: {
+        kg: 1000,
+        hg: 100,
+        g: 1
+      },
+      piece: {
+        st: 1,
+        pkt: 1,
+        burk: 1,
+        burkar: 1,
+        skiva: 1,
+        skivor: 1,
+        klyfta: 1,
+        klyftor: 1
+      }
+    };
+
+    const preferredDisplayUnits = {
+      volume: ["l", "dl", "ml", "msk", "tsk", "krm"],
+      weight: ["kg", "hg", "g"],
+      piece: ["st", "pkt", "burk", "burkar", "skiva", "skivor", "klyfta", "klyftor"]
+    };
+
+    let bankItemCounter = 1;
+    let savedStepCounter = 1;
+    let builderIngredientCounter = 1;
+
+    const state = {
+      title: "",
+      ingredientBank: [],
+      instructionBank: [...defaultInstructionLibrary.map(item => ({ ...item }))],
+      builder: {
+        ingredients: [],
+        instructions: [],
+        customInstruction: "",
+        restMinutes: 0,
+        ovenTemp: "",
+        ovenMinutes: "",
+        targetTemp: ""
+      },
+      recipeSteps: []
+    };
+
+    const ingredientBankEl = document.getElementById("ingredientBank");
+    const instructionBankEl = document.getElementById("instructionBank");
+    const builderIngredientZoneEl = document.getElementById("builderIngredientZone");
+    const builderInstructionZoneEl = document.getElementById("builderInstructionZone");
+    const builderCustomInstructionEl = document.getElementById("builderCustomInstruction");
+    const builderSpecialHostEl = document.getElementById("builderSpecialHost");
+    const builderPreviewHostEl = document.getElementById("builderPreviewHost");
+    const savedStepsEl = document.getElementById("savedSteps");
+    const recipePreviewEl = document.getElementById("recipePreview");
+    const recipeTitleInput = document.getElementById("recipeTitleInput");
+    const recipeTitlePreview = document.getElementById("recipeTitlePreview");
+    const importText = document.getElementById("importText");
+    const parseRecipeBtn = document.getElementById("parseRecipeBtn");
+    const importIngredientsBtn = document.getElementById("importIngredientsBtn");
+    const clearImportBtn = document.getElementById("clearImportBtn");
+    const clearBankBtn = document.getElementById("clearBankBtn");
+    const saveStepBtn = document.getElementById("saveStepBtn");
+    const clearBuilderBtn = document.getElementById("clearBuilderBtn");
+    const printBtn = document.getElementById("printBtn");
+    const printBtnBottom = document.getElementById("printBtnBottom");
+    const saveRecipeBtn = document.getElementById("saveRecipeBtn");
+    const saveRecipeBtnBottom = document.getElementById("saveRecipeBtnBottom");
+    const resetRecipeBtn = document.getElementById("resetRecipeBtn");
+    const resetRecipeBtnBottom = document.getElementById("resetRecipeBtnBottom");
+    const recipeUrlInput = document.getElementById("recipeUrlInput");
+    const importUrlBtn = document.getElementById("importUrlBtn");
+    const urlImportStatus = document.getElementById("urlImportStatus");
+
+    function normalizeLine(line){
+      return String(line || "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function cleanLines(text){
+      return String(text || "").split(/\r?\n/).map(normalizeLine).filter(Boolean);
+    }
+
+    function setUrlStatus(message, type){
+      urlImportStatus.textContent = message;
+      urlImportStatus.className = "status-box" + (type ? " " + type : "");
+    }
+
+    function dedupeLines(lines){
+      const seen = new Set();
+      const result = [];
+      lines.forEach(line => {
+        const clean = normalizeLine(line);
+        const key = clean.toLowerCase();
+        if (!clean || seen.has(key)) return;
+        seen.add(key);
+        result.push(clean);
+      });
+      return result;
+    }
+
+    function dedupeAgainstBank(lines){
+      const existing = new Set(state.ingredientBank.map(item => normalizeLine(item.label).toLowerCase()));
+      return lines.filter(line => !existing.has(normalizeLine(line).toLowerCase()));
+    }
+
+    function shouldBlockIngredientLine(line){
+      const lower = normalizeLine(line).toLowerCase();
+      if (!lower) return true;
+      if (/^\[.*?\]\(.*?\)$/.test(lower)) return true;
+      if (blockedIngredientPhrases.some(phrase => lower.includes(phrase))) return true;
+      return false;
+    }
+
+    function extractMarkdownSectionLines(rawText, headingText){
+      const lines = String(rawText || "").split(/\r?\n/);
+      const target = headingText.toLowerCase();
+      let startIndex = -1;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = normalizeLine(lines[i]).toLowerCase();
+        if (line === target) {
+          startIndex = i + 1;
+          break;
+        }
+      }
+
+      if (startIndex === -1) return [];
+
+      const sectionLines = [];
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = normalizeLine(lines[i]);
+        if (!line) continue;
+        if (/^##\s+/.test(line)) break;
+        sectionLines.push(line);
+      }
+
+      return sectionLines;
+    }
+
+    function cleanupIngredientLine(line){
+      return normalizeLine(
+        String(line || "")
+          .replace(/^[-*•]\s*/, "")
+          .replace(/^\d+\.\s*/, "")
+      );
+    }
+
+    function extractIngredientsFromMarkdownHeadings(rawText){
+      const ingredientLines = extractMarkdownSectionLines(rawText, "## Ingredienser")
+        .map(cleanupIngredientLine)
+        .filter(Boolean)
+        .filter(line => !shouldBlockIngredientLine(line))
+        .filter(line => isLikelyIngredient(line));
+
+      if (!ingredientLines.length) return null;
+
+      return {
+        title: "",
+        ingredients: dedupeLines(ingredientLines),
+        instructions: []
+      };
+    }
+
+    function isLikelyHeading(line){
+      const lower = line.toLowerCase();
+      return [
+        "ingredienser",
+        "du behöver",
+        "gör så här",
+        "gör såhär",
+        "instruktioner",
+        "tillagning",
+        "så här gör du",
+        "sa har gor du",
+        "metod",
+        "för alla",
+        "klimatanpassa"
+      ].includes(lower);
+    }
+
+    function isIngredientHeading(line){
+      const lower = line.toLowerCase();
+      return ["ingredienser", "du behöver"].includes(lower);
+    }
+
+    function isLikelyIngredient(line){
+      const lower = line.toLowerCase();
+
+      if (/^\d+\s*$/.test(lower)) return false;
+      if (isLikelyHeading(lower)) return false;
+      if (/^\d+\./.test(lower)) return false;
+      if (/^steg\s*\d+/i.test(lower)) return false;
+      if (shouldBlockIngredientLine(lower)) return false;
+
+      const measurementPattern = /\b(dl|ml|l|g|kg|hg|msk|tsk|krm|st|pkt|burk|burkar|nypa|nypor|droppe|droppar|cm|skiva|skivor|klyfta|klyftor)\b/i;
+      const amountPattern = /^(\d+([.,]\d+)?|[½¼¾]|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio)\b/i;
+
+      if (measurementPattern.test(lower)) return true;
+      if (amountPattern.test(lower) && lower.split(" ").length <= 8) return true;
+      if (/^\d+[.,]?\d*\s*[a-zåäö]/i.test(lower) && lower.split(" ").length <= 8) return true;
+
+      return false;
+    }
+
+    function extractUsefulTextFromFetchedPage(raw){
+      let text = String(raw || "");
+      text = text.replace(/```[\s\S]*?```/g, " ");
+      text = text.replace(/\[([^\]]+)\]\((.*?)\)/g, "$1");
+      text = text.replace(/[ \t]+\n/g, "\n");
+      text = text.replace(/\n{3,}/g, "\n\n");
+      return text.trim();
+    }
+
+    function strictExtractIngredientSections(rawText){
+      const lines = cleanLines(rawText);
+      if (!lines.length) return null;
+
+      let title = "";
+      let ingredients = [];
+
+      const firstNonHeading = lines.find(line => !isLikelyHeading(line) && !isLikelyIngredient(line));
+      if (firstNonHeading && firstNonHeading.length <= 120) {
+        title = firstNonHeading;
+      }
+
+      let mode = "";
+      let ingredientFound = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = normalizeLine(lines[i]);
+        if (title && line === title) continue;
+
+        if (isIngredientHeading(line)) {
+          mode = "ingredients";
+          ingredientFound = true;
+          continue;
+        }
+
+        if (!mode) continue;
+        if (mode === "ingredients" && isLikelyIngredient(line) && !shouldBlockIngredientLine(line)) {
+          ingredients.push(line);
+        }
+      }
+
+      ingredients = dedupeLines(ingredients.filter(Boolean));
+
+      if (!ingredientFound || !ingredients.length) return null;
+
+      return { title, ingredients, instructions: [] };
+    }
+
+    function parseSwedishAmountToNumber(amountText){
+      let text = normalizeLine(amountText)
+        .replace(/,/g, ".")
+        .replace(/½/g, " 1/2")
+        .replace(/¼/g, " 1/4")
+        .replace(/¾/g, " 3/4")
+        .replace(/\ben\b/gi, "1")
+        .replace(/\bett\b/gi, "1")
+        .replace(/\btvå\b/gi, "2")
+        .replace(/\btre\b/gi, "3")
+        .replace(/\bfyra\b/gi, "4")
+        .replace(/\bfem\b/gi, "5")
+        .replace(/\bsex\b/gi, "6")
+        .replace(/\bsju\b/gi, "7")
+        .replace(/\båtta\b/gi, "8")
+        .replace(/\bnio\b/gi, "9")
+        .replace(/\btio\b/gi, "10");
+
+      const parts = text.split(" ").filter(Boolean);
+      let total = 0;
+      let found = false;
+
+      parts.forEach(part => {
+        if (/^\d+\/\d+$/.test(part)) {
+          const [a, b] = part.split("/").map(Number);
+          if (b) {
+            total += a / b;
+            found = true;
+          }
+        } else if (/^\d+(\.\d+)?$/.test(part)) {
+          total += Number(part);
+          found = true;
+        }
+      });
+
+      return found ? total : null;
+    }
+
+    function formatSwedishNumber(value){
+      const rounded = Math.round(value * 100) / 100;
+      if (Math.abs(rounded - Math.round(rounded)) < 0.0001) return String(Math.round(rounded));
+      return String(rounded).replace(".", ",");
+    }
+
+    function getUnitSystem(unit){
+      const lowerUnit = normalizeLine(unit).toLowerCase();
+      if (lowerUnit in unitSystems.volume) return "volume";
+      if (lowerUnit in unitSystems.weight) return "weight";
+      if (lowerUnit in unitSystems.piece) return "piece";
+      return null;
+    }
+
+    function convertToBaseUnit(amount, unit, system){
+      if (!system || amount === null || amount === undefined) return null;
+      const factor = unitSystems[system]?.[unit];
+      if (!factor) return null;
+      return amount * factor;
+    }
+
+    function convertFromBaseUnit(baseAmount, unit, system){
+      if (!system || baseAmount === null || baseAmount === undefined) return null;
+      const factor = unitSystems[system]?.[unit];
+      if (!factor) return null;
+      return baseAmount / factor;
+    }
+
+    function formatAmountWithUnit(amount, unit){
+      return `${formatSwedishNumber(amount)} ${unit}`;
+    }
+
+    function formatIngredientFromBase(baseAmount, system, restText, preferredUnit){
+      if (!system || baseAmount === null || baseAmount === undefined) {
+        return restText || "";
+      }
+
+      const units = preferredUnit ? [preferredUnit, ...preferredDisplayUnits[system].filter(u => u !== preferredUnit)] : preferredDisplayUnits[system];
+      let chosenUnit = preferredUnit || units[0];
+      let chosenAmount = convertFromBaseUnit(baseAmount, chosenUnit, system);
+
+      for (const unit of units) {
+        const amount = convertFromBaseUnit(baseAmount, unit, system);
+        if (amount === null) continue;
+        const roundedAmount = Math.round(amount * 100) / 100;
+        if (roundedAmount >= 1 && roundedAmount <= 20) {
+          chosenUnit = unit;
+          chosenAmount = amount;
+          break;
+        }
+      }
+
+      const amountText = formatAmountWithUnit(chosenAmount, chosenUnit);
+      return `${amountText}${restText ? " " + restText : ""}`.trim();
+    }
+
+    function parseIngredientParts(text){
+      const clean = normalizeLine(text);
+      const measureMatch = clean.match(/^(.+?)\s+(dl|ml|l|g|kg|hg|msk|tsk|krm|st|pkt|burk|burkar|skiva|skivor|klyfta|klyftor)\b(.*)$/i);
+
+      if (measureMatch) {
+        const amountRaw = normalizeLine(measureMatch[1]);
+        const unit = normalizeLine(measureMatch[2]).toLowerCase();
+        const rest = normalizeLine(measureMatch[3]);
+        const numericValue = parseSwedishAmountToNumber(amountRaw);
+        const system = getUnitSystem(unit);
+        const baseAmount = numericValue !== null ? convertToBaseUnit(numericValue, unit, system) : null;
+
+        if (numericValue !== null && system && baseAmount !== null) {
+          return {
+            original: clean,
+            hasAdjustableQty: true,
+            amountRaw,
+            unit,
+            rest,
+            numericValue,
+            system,
+            baseAmount
+          };
+        }
+      }
+
+      const pieceMatch = clean.match(/^((?:\d+(?:[.,]\d+)?|[½¼¾]|\d+\s+\d+\/\d+|\d+\/\d+|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio))\s+(.+)$/i);
+      if (pieceMatch) {
+        const amountRaw = normalizeLine(pieceMatch[1]);
+        const rest = normalizeLine(pieceMatch[2]);
+        const numericValue = parseSwedishAmountToNumber(amountRaw);
+        const unit = "st";
+        const system = "piece";
+        const baseAmount = numericValue !== null ? convertToBaseUnit(numericValue, unit, system) : null;
+
+        if (numericValue !== null && baseAmount !== null && rest) {
+          return {
+            original: clean,
+            hasAdjustableQty: true,
+            amountRaw,
+            unit,
+            rest,
+            numericValue,
+            system,
+            baseAmount
+          };
+        }
+      }
+
+      return {
+        original: clean,
+        hasAdjustableQty: false,
+        amountRaw: "",
+        unit: "",
+        rest: clean,
+        numericValue: null,
+        system: null,
+        baseAmount: null
+      };
+    }
+
+    function getDefaultIngredientHelp(text, parts){
+      const lower = normalizeLine(text).toLowerCase();
+      if (lower === "margarin / olja för stekning") return "alltid tillgänglig";
+      return parts.hasAdjustableQty ? "kan delas upp" : "importerad ingrediens";
+    }
+
+    function getDefaultIngredientSource(text, extra){
+      if (extra && extra.source) return extra.source;
+      if (normalizeLine(text).toLowerCase() === "margarin / olja för stekning") return "fixed";
+      return "imported";
+    }
+
+    function getAlwaysAvailableIngredientItems(){
+      return alwaysAvailableIngredients.map(text => createIngredientItem(text, { source: "fixed" }));
+    }
+
+    function resetIngredientBankWithAlwaysAvailable(){
+      state.ingredientBank = getAlwaysAvailableIngredientItems();
+    }
+
+    function getIngredientDisplayLabel(item){
+      return item.adjustedLabel || item.label;
+    }
+
+    function getIconMarkup(icon){
+      if (customSvgIcons[icon]) return customSvgIcons[icon];
+      return escapeHtml(icon);
+    }
+
+    function createIngredientItem(text, extra = {}){
+      const parts = parseIngredientParts(text);
+      return {
+        id: extra.id || "bank-ingredient-" + bankItemCounter++,
+        type: "ingredient",
+        icon: "🥄",
+        label: text,
+        help: extra.help || getDefaultIngredientHelp(text, parts),
+        source: getDefaultIngredientSource(text, extra),
+        hasAdjustableQty: parts.hasAdjustableQty,
+        unit: parts.unit || "",
+        rest: parts.rest || "",
+        numericValue: parts.numericValue,
+        system: parts.system,
+        baseAmount: parts.baseAmount,
+        adjustedLabel: extra.adjustedLabel || text,
+        selectedSplitUnit: extra.selectedSplitUnit || (parts.unit || ""),
+        selectedSplitAmount: extra.selectedSplitAmount || "all",
+        leftoverId: extra.leftoverId || null,
+        originalBankId: extra.originalBankId || null,
+        builderId: extra.builderId || null
+      };
+    }
+
+    function makeBuilderIngredientFromBankItem(item){
+      return {
+        ...item,
+        builderId: "builder-ingredient-" + builderIngredientCounter++,
+        originalBankId: item.id,
+        adjustedLabel: item.label,
+        selectedSplitUnit: item.unit || "",
+        selectedSplitAmount: "all",
+        leftoverId: null
+      };
+    }
+
+    function getSplitUnitOptions(item){
+      if (!item.hasAdjustableQty || !item.system || !item.baseAmount) return [];
+      return preferredDisplayUnits[item.system]
+        .filter(unit => unitSystems[item.system][unit])
+        .filter(unit => convertFromBaseUnit(item.baseAmount, unit, item.system) >= 0.2)
+        .map(unit => ({ value: unit, label: unit }));
+    }
+
+    function getSplitAmountOptions(item, unit){
+      if (!item.hasAdjustableQty || !item.system || !item.baseAmount || !unit) {
+        return [{ value: "all", label: "Använd allt" }];
+      }
+
+      const totalInUnit = convertFromBaseUnit(item.baseAmount, unit, item.system);
+      if (totalInUnit === null || totalInUnit <= 0) {
+        return [{ value: "all", label: "Använd allt" }];
+      }
+
+      const options = [{ value: "all", label: `Använd allt (${item.label})` }];
+      const maxWhole = Math.floor(totalInUnit);
+
+      for (let amount = 1; amount <= maxWhole; amount++) {
+        if (amount >= totalInUnit) break;
+        options.push({
+          value: String(amount),
+          label: formatAmountWithUnit(amount, unit)
+        });
+      }
+
+      return options;
+    }
+
+    function removeLeftoverFromBank(leftoverId){
+      if (!leftoverId) return;
+      state.ingredientBank = state.ingredientBank.filter(item => item.id !== leftoverId);
+    }
+
+    function upsertBankIngredient(item){
+      const existingIndex = state.ingredientBank.findIndex(x => x.id === item.id);
+      if (existingIndex >= 0) {
+        state.ingredientBank[existingIndex] = item;
+      } else {
+        state.ingredientBank.unshift(item);
+      }
+    }
+
+    function applyIngredientSplit(item){
+      removeLeftoverFromBank(item.leftoverId);
+      item.leftoverId = null;
+
+      if (!item.hasAdjustableQty || !item.baseAmount || item.selectedSplitAmount === "all") {
+        item.adjustedLabel = item.label;
+        return;
+      }
+
+      const selectedUnit = item.selectedSplitUnit || item.unit;
+      const selectedAmount = Number(item.selectedSplitAmount);
+
+      if (!selectedUnit || !selectedAmount || selectedAmount <= 0) {
+        item.adjustedLabel = item.label;
+        item.selectedSplitAmount = "all";
+        return;
+      }
+
+      const usedBase = convertToBaseUnit(selectedAmount, selectedUnit, item.system);
+      if (!usedBase || usedBase <= 0 || usedBase >= item.baseAmount) {
+        item.adjustedLabel = item.label;
+        item.selectedSplitAmount = "all";
+        return;
+      }
+
+      const leftBase = item.baseAmount - usedBase;
+      item.adjustedLabel = `${formatAmountWithUnit(selectedAmount, selectedUnit)}${item.rest ? " " + item.rest : ""}`.trim();
+
+      const leftoverId = `leftover-${item.builderId}`;
+      const leftoverLabel = formatIngredientFromBase(leftBase, item.system, item.rest, item.unit);
+
+      upsertBankIngredient(createIngredientItem(leftoverLabel, {
+        id: leftoverId,
+        source: "leftover"
+      }));
+
+      item.leftoverId = leftoverId;
+    }
+
+    function restoreBuilderIngredientToBank(item){
+      removeLeftoverFromBank(item.leftoverId);
+      const restoreItem = createIngredientItem(item.label, {
+        id: item.originalBankId || "bank-ingredient-" + bankItemCounter++,
+        source: item.source || "imported"
+      });
+      upsertBankIngredient(restoreItem);
+    }
+
+    function resetBuilderAfterSave(){
+      state.builder.ingredients.forEach(item => {
+        item.leftoverId = null;
+      });
+      state.builder.ingredients = [];
+      state.builder.instructions = [];
+      state.builder.customInstruction = "";
+      state.builder.restMinutes = 0;
+      state.builder.ovenTemp = "";
+      state.builder.ovenMinutes = "";
+      state.builder.targetTemp = "";
+      builderCustomInstructionEl.value = "";
+    }
+
+    function clearBuilder(){
+      state.builder.ingredients.forEach(item => {
+        restoreBuilderIngredientToBank(item);
+      });
+      state.builder.ingredients = [];
+      state.builder.instructions = [];
+      state.builder.customInstruction = "";
+      state.builder.restMinutes = 0;
+      state.builder.ovenTemp = "";
+      state.builder.ovenMinutes = "";
+      state.builder.targetTemp = "";
+      builderCustomInstructionEl.value = "";
+      renderBuilder();
+      renderPreview();
+    }
+
+    function detectIconFromText(text){
+      const lower = text.toLowerCase();
+      if (/(häll i|tillsätt|lägg i)/i.test(lower)) return "🫗";
+      if (/vispa/i.test(lower)) return "🥣";
+      if (/(blanda|blandas|mixa ihop)/i.test(lower)) return "🥄";
+      if (/(värma i gryta|gryta)/i.test(lower)) return "svg-varma";
+      if (/(till temperatur|temperatur)/i.test(lower)) return "🌡️";
+      if (/(slickepott|vända in|vända in med)/i.test(lower)) return "svg-vanda-in";
+      if (/(bröda|bröa)/i.test(lower)) return "svg-broda";
+      if (/(skära|hacka|strimla)/i.test(lower)) return "🔪";
+      if (/riva/i.test(lower)) return "svg-riva";
+      if (/(stek|fräs)/i.test(lower)) return "🍳";
+      if (/fritera/i.test(lower)) return "🍤";
+      if (/(koka|sjuda|kastrull)/i.test(lower)) return "♨️";
+      if (/(baka|grädda|ugn)/i.test(lower)) return "🔥";
+      if (/(servera|lägg upp)/i.test(lower)) return "🍽️";
+      if (/(form)/i.test(lower)) return "🍱";
+      if (/(vila|jäsa|stå)/i.test(lower)) return "⏱️";
+      return "📝";
+    }
+
+    function parseRecipeText(rawText){
+      const lines = cleanLines(rawText);
+      if (!lines.length) return null;
+
+      let detectedTitle = "";
+      let ingredients = [];
+
+      const firstLine = lines[0];
+      const hasAnyHeading = lines.some(isLikelyHeading);
+
+      if (!isLikelyHeading(firstLine) && !isLikelyIngredient(firstLine) && firstLine.length <= 120) {
+        detectedTitle = firstLine;
+      }
+
+      if (hasAnyHeading) {
+        let mode = "";
+        lines.forEach((line, index) => {
+          if (index === 0 && detectedTitle && line === detectedTitle) return;
+          if (isIngredientHeading(line)) {
+            mode = "ingredients";
+            return;
+          }
+          if (mode === "ingredients" && isLikelyIngredient(line) && !shouldBlockIngredientLine(line)) {
+            ingredients.push(line.replace(/^[-•*]\s*/, ""));
+          }
+        });
+      } else {
+        lines.forEach((line, index) => {
+          if (index === 0 && detectedTitle && line === detectedTitle) return;
+          if (isLikelyIngredient(line) && !shouldBlockIngredientLine(line)) {
+            ingredients.push(line.replace(/^[-•*]\s*/, ""));
+          }
+        });
+      }
+
+      return {
+        title: detectedTitle,
+        ingredients: dedupeLines(ingredients.filter(Boolean)),
+        instructions: []
+      };
+    }
+
+    async function importFromUrl(){
+      const rawUrl = recipeUrlInput.value.trim();
+      if (!rawUrl) {
+        setUrlStatus("Klistra in en receptlänk först.", "warn");
+        return;
+      }
+
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(rawUrl);
+      } catch (error) {
+        setUrlStatus("Länken verkar inte vara giltig.", "warn");
+        return;
+      }
+
+      importUrlBtn.disabled = true;
+      setUrlStatus("Försöker hämta ingredienser från länken ...", "");
+
+      const targetUrl = parsedUrl.href;
+      const proxyUrl = "https://r.jina.ai/http://" + targetUrl.replace(/^https?:\/\//i, "");
+
+      try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Kunde inte läsa sidan.");
+
+        const fetchedRaw = await response.text();
+
+        const markdownParsed = extractIngredientsFromMarkdownHeadings(fetchedRaw);
+        if (markdownParsed) {
+          const parts = [];
+          if (markdownParsed.ingredients.length) {
+            parts.push("Ingredienser");
+            parts.push(...markdownParsed.ingredients);
+          }
+
+          importText.value = parts.join("\n");
+          addImportedContentToBanks(markdownParsed);
+          setUrlStatus("Importerade bara ingredienser via ## Ingredienser.", "ok");
+          return;
+        }
+
+        const cleaned = extractUsefulTextFromFetchedPage(fetchedRaw);
+        if (!cleaned) throw new Error("Ingen text kunde läsas från länken.");
+
+        const strictParsed = strictExtractIngredientSections(cleaned);
+        if (!strictParsed) {
+          importText.value = cleaned;
+          setUrlStatus("Ingrediensrubriken hittades inte. Texten ligger i importfältet.", "warn");
+          return;
+        }
+
+        const strictTextParts = [];
+        if (strictParsed.title) strictTextParts.push(strictParsed.title);
+        if (strictParsed.ingredients.length) {
+          strictTextParts.push("Ingredienser");
+          strictTextParts.push(...strictParsed.ingredients);
+        }
+
+        importText.value = strictTextParts.join("\n");
+        addImportedContentToBanks(strictParsed);
+        setUrlStatus("Importerade bara ingredienser. Steg hämtades inte från länken.", "ok");
+      } catch (error) {
+        setUrlStatus("Det gick inte att importera från länken automatiskt. Prova att kopiera ingredienslistan och klistra in den i textfältet istället.", "warn");
+      } finally {
+        importUrlBtn.disabled = false;
+      }
+    }
+
+    function makeInstructionBankItem(text){
+      return {
+        id: "bank-instruction-" + bankItemCounter++,
+        type: "instruction",
+        icon: detectIconFromText(text),
+        label: text,
+        help: "importerad instruktion",
+        source: "imported"
+      };
+    }
+
+    function addImportedContentToBanks(parsed){
+      if (!parsed) return;
+
+      if (parsed.title) {
+        state.title = parsed.title;
+        recipeTitleInput.value = parsed.title;
+      }
+
+      const uniqueIngredients = dedupeAgainstBank(parsed.ingredients.filter(Boolean));
+      uniqueIngredients.forEach(line => {
+        state.ingredientBank.push(createIngredientItem(line));
+      });
+
+      if (parsed.instructions && parsed.instructions.length) {
+        parsed.instructions.filter(Boolean).forEach(line => {
+          state.instructionBank.push(makeInstructionBankItem(line));
+        });
+      }
+
+      renderAll();
+    }
+
+    function addIngredientsOnlyToBank(rawText){
+      const lines = cleanLines(rawText)
+        .map(line => line.replace(/^[-•*]\s*/, ""))
+        .filter(line => !isLikelyHeading(line))
+        .filter(line => !shouldBlockIngredientLine(line))
+        .filter(line => isLikelyIngredient(line));
+
+      const uniqueLines = dedupeAgainstBank(dedupeLines(lines));
+      uniqueLines.forEach(line => state.ingredientBank.push(createIngredientItem(line)));
+      renderAll();
+    }
+
+    function renderBankList(listEl, items){
+      listEl.innerHTML = "";
+
+      if (!items.length) {
+        listEl.innerHTML = '<div class="dropzone-empty">Inget innehåll här ännu.</div>';
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bank-card " + (item.type === "ingredient" ? "ingredient-card" : "instruction-card");
+        card.draggable = true;
+        card.dataset.bankId = item.id;
+        card.dataset.itemType = item.type;
+        card.innerHTML = `
+          <span class="icon-chip">${getIconMarkup(item.icon)}</span>
+          <div class="card-text">
+            <strong>${escapeHtml(item.type === "ingredient" ? getIngredientDisplayLabel(item) : item.label)}</strong>
+            <span>${escapeHtml(item.help || "")}</span>
+          </div>
+        `;
+        card.addEventListener("dragstart", onDragStartBankItem);
+        listEl.appendChild(card);
+      });
+    }
+
+    function onDragStartBankItem(e){
+      e.dataTransfer.setData("application/json", JSON.stringify({
+        bankId: e.currentTarget.dataset.bankId,
+        itemType: e.currentTarget.dataset.itemType
+      }));
+    }
+
+    function findBankItemById(id){
+      return state.ingredientBank.find(item => item.id === id) || state.instructionBank.find(item => item.id === id);
+    }
+
+    function removeBankItemById(id){
+      state.ingredientBank = state.ingredientBank.filter(item => item.id !== id);
+      state.instructionBank = state.instructionBank.filter(item => item.id !== id);
+    }
+
+    function moveItem(arr, fromIndex, toIndex){
+      if (toIndex < 0 || toIndex >= arr.length) return;
+      const [item] = arr.splice(fromIndex, 1);
+      arr.splice(toIndex, 0, item);
+    }
+
+    function createAssignedCard(item, onRemove, onMoveUp, onMoveDown){
+      const card = document.createElement("div");
+      card.className = "assigned-card";
+
+      const main = document.createElement("div");
+      main.className = "assigned-main";
+      main.innerHTML = `
+        <span class="icon-chip">${getIconMarkup(item.icon)}</span>
+        <div class="card-text">
+          <strong>${escapeHtml(item.type === "ingredient" ? getIngredientDisplayLabel(item) : item.label)}</strong>
+          <span>${escapeHtml(item.help || "")}</span>
+        </div>
+      `;
+
+      const controls = document.createElement("div");
+      controls.className = "assigned-controls";
+
+      if (onMoveUp) {
+        const upBtn = document.createElement("button");
+        upBtn.className = "ghost";
+        upBtn.textContent = "↑";
+        upBtn.addEventListener("click", onMoveUp);
+        controls.appendChild(upBtn);
+      }
+
+      if (onMoveDown) {
+        const downBtn = document.createElement("button");
+        downBtn.className = "ghost";
+        downBtn.textContent = "↓";
+        downBtn.addEventListener("click", onMoveDown);
+        controls.appendChild(downBtn);
+      }
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-assigned";
+      removeBtn.textContent = "Till bank";
+      removeBtn.addEventListener("click", onRemove);
+      controls.appendChild(removeBtn);
+
+      main.appendChild(controls);
+      card.appendChild(main);
+
+      if (item.type === "ingredient" && item.hasAdjustableQty && item.baseAmount > 0) {
+        const extra = document.createElement("div");
+        extra.className = "assigned-extra";
+
+        const splitRow = document.createElement("div");
+        splitRow.className = "assigned-split-row";
+
+        const amountSelect = document.createElement("select");
+        amountSelect.className = "assigned-split-select";
+
+        const unitSelect = document.createElement("select");
+        unitSelect.className = "assigned-split-select";
+
+        const unitOptions = getSplitUnitOptions(item);
+        unitSelect.innerHTML = unitOptions.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join("");
+        unitSelect.value = unitOptions.some(opt => opt.value === item.selectedSplitUnit) ? item.selectedSplitUnit : (unitOptions[0]?.value || item.unit);
+
+        function renderAmountOptions(){
+          const options = getSplitAmountOptions(item, unitSelect.value);
+          amountSelect.innerHTML = options.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join("");
+
+          if (options.some(opt => opt.value === String(item.selectedSplitAmount))) {
+            amountSelect.value = String(item.selectedSplitAmount);
+          } else {
+            amountSelect.value = "all";
+            item.selectedSplitAmount = "all";
+          }
+        }
+
+        renderAmountOptions();
+
+        unitSelect.addEventListener("change", () => {
+          item.selectedSplitUnit = unitSelect.value;
+          item.selectedSplitAmount = "all";
+          renderAmountOptions();
+          applyIngredientSplit(item);
+          renderAll();
+        });
+
+        amountSelect.addEventListener("change", () => {
+          item.selectedSplitUnit = unitSelect.value;
+          item.selectedSplitAmount = amountSelect.value;
+          applyIngredientSplit(item);
+          renderAll();
+        });
+
+        splitRow.appendChild(amountSelect);
+        splitRow.appendChild(unitSelect);
+        extra.appendChild(splitRow);
+
+        if (item.leftoverId) {
+          const remainderItem = state.ingredientBank.find(x => x.id === item.leftoverId);
+          if (remainderItem) {
+            const remainder = document.createElement("div");
+            remainder.className = "assigned-remainder";
+            remainder.textContent = `Kvar i byggbank: ${getIngredientDisplayLabel(remainderItem)}`;
+            extra.appendChild(remainder);
+          }
+        }
+
+        card.appendChild(extra);
+      }
+
+      return card;
+    }
+
+    function setupDropzone(zoneEl, acceptedType, onDropItem){
+      zoneEl.ondragover = (e) => {
+        e.preventDefault();
+        zoneEl.classList.add("active");
+      };
+
+      zoneEl.ondragleave = () => {
+        zoneEl.classList.remove("active");
+      };
+
+      zoneEl.ondrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        zoneEl.classList.remove("active");
+
+        let payload = null;
+        try {
+          payload = JSON.parse(e.dataTransfer.getData("application/json"));
+        } catch (error) {
+          payload = null;
+        }
+
+        if (!payload || payload.itemType !== acceptedType) return;
+
+        const item = findBankItemById(payload.bankId);
+        if (!item) return;
+
+        onDropItem(item);
+      };
+    }
+
+    function builderHasInstruction(label){
+      return state.builder.instructions.some(item => item.label === label);
+    }
+
+    function renderSpecialOptions(){
+      builderSpecialHostEl.innerHTML = "";
+
+      const showRest = builderHasInstruction("Vila");
+      const showOven = builderHasInstruction("Ställ in i ugnen");
+      const showTargetTemp = builderHasInstruction("Till temperatur");
+
+      if (!showRest && !showOven && !showTargetTemp) return;
+
+      const box = document.createElement("div");
+      box.className = "special-box";
+      box.innerHTML = `<h3>Extra val för instruktion</h3>`;
+
+      const grid = document.createElement("div");
+      grid.className = "special-grid";
+
+      if (showRest) {
+        const wrap = document.createElement("div");
+        wrap.innerHTML = `
+          <label for="restMinutesSelect">Vila</label>
+          <select id="restMinutesSelect">
+            <option value="0">Ingen tid vald</option>
+            <option value="10">10 min</option>
+            <option value="20">20 min</option>
+            <option value="30">30 min</option>
+            <option value="40">40 min</option>
+            <option value="50">50 min</option>
+            <option value="60">60 min</option>
+            <option value="70">70 min</option>
+            <option value="80">80 min</option>
+            <option value="90">90 min</option>
+            <option value="100">100 min</option>
+            <option value="110">110 min</option>
+            <option value="120">120 min</option>
+          </select>
+        `;
+        grid.appendChild(wrap);
+      }
+
+      if (showOven) {
+        const wrapTemp = document.createElement("div");
+        wrapTemp.innerHTML = `
+          <label for="ovenTempInput">Ugn temperatur</label>
+          <input id="ovenTempInput" type="number" min="0" step="5" placeholder="t.ex. 200">
+        `;
+        grid.appendChild(wrapTemp);
+
+        const wrapTime = document.createElement("div");
+        wrapTime.innerHTML = `
+          <label for="ovenMinutesInput">Ugn tid (min)</label>
+          <input id="ovenMinutesInput" type="number" min="0" step="5" placeholder="t.ex. 20">
+        `;
+        grid.appendChild(wrapTime);
+      }
+
+      if (showTargetTemp) {
+        const wrapTarget = document.createElement("div");
+        wrapTarget.innerHTML = `
+          <label for="targetTempInput">Temperatur</label>
+          <input id="targetTempInput" type="number" min="0" step="1" placeholder="t.ex. 72">
+        `;
+        grid.appendChild(wrapTarget);
+      }
+
+      box.appendChild(grid);
+      builderSpecialHostEl.appendChild(box);
+
+      if (showRest) {
+        const restSelect = document.getElementById("restMinutesSelect");
+        restSelect.value = String(state.builder.restMinutes || 0);
+        restSelect.addEventListener("change", () => {
+          state.builder.restMinutes = Number(restSelect.value) || 0;
+          renderBuilderPreview();
+        });
+      }
+
+      if (showOven) {
+        const ovenTempInput = document.getElementById("ovenTempInput");
+        const ovenMinutesInput = document.getElementById("ovenMinutesInput");
+        ovenTempInput.value = state.builder.ovenTemp || "";
+        ovenMinutesInput.value = state.builder.ovenMinutes || "";
+        ovenTempInput.addEventListener("input", () => {
+          state.builder.ovenTemp = ovenTempInput.value;
+          renderBuilderPreview();
+        });
+        ovenMinutesInput.addEventListener("input", () => {
+          state.builder.ovenMinutes = ovenMinutesInput.value;
+          renderBuilderPreview();
+        });
+      }
+
+      if (showTargetTemp) {
+        const targetTempInput = document.getElementById("targetTempInput");
+        targetTempInput.value = state.builder.targetTemp || "";
+        targetTempInput.addEventListener("input", () => {
+          state.builder.targetTemp = targetTempInput.value;
+          renderBuilderPreview();
+        });
+      }
+    }
+
+    function renderBuilder(){
+      builderIngredientZoneEl.innerHTML = "";
+      builderInstructionZoneEl.innerHTML = "";
+
+      setupDropzone(builderIngredientZoneEl, "ingredient", (item) => {
+        const builderItem = makeBuilderIngredientFromBankItem(item);
+        removeBankItemById(item.id);
+        state.builder.ingredients.push(builderItem);
+        renderAll();
+      });
+
+      setupDropzone(builderInstructionZoneEl, "instruction", (item) => {
+        const copy = {
+          ...item,
+          id: item.id + "-copy-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7)
+        };
+        state.builder.instructions.push(copy);
+        renderBuilder();
+      });
+
+      if (!state.builder.ingredients.length) {
+        builderIngredientZoneEl.innerHTML = `<div class="dropzone-empty">Dra ingredienser hit från byggbanken.</div>`;
+      } else {
+        state.builder.ingredients.forEach((item, index) => {
+          builderIngredientZoneEl.appendChild(createAssignedCard(
+            item,
+            () => {
+              restoreBuilderIngredientToBank(item);
+              state.builder.ingredients.splice(index, 1);
+              renderAll();
+            },
+            index > 0 ? () => {
+              moveItem(state.builder.ingredients, index, index - 1);
+              renderBuilder();
+            } : null,
+            index < state.builder.ingredients.length - 1 ? () => {
+              moveItem(state.builder.ingredients, index, index + 1);
+              renderBuilder();
+            } : null
+          ));
+        });
+      }
+
+      if (!state.builder.instructions.length) {
+        builderInstructionZoneEl.innerHTML = `<div class="dropzone-empty">Dra en eller flera instruktioner hit från byggbanken.</div>`;
+      } else {
+        state.builder.instructions.forEach((item, index) => {
+          builderInstructionZoneEl.appendChild(createAssignedCard(
+            item,
+            () => {
+              state.builder.instructions.splice(index, 1);
+
+              if (!builderHasInstruction("Vila")) {
+                state.builder.restMinutes = 0;
+              }
+              if (!builderHasInstruction("Ställ in i ugnen")) {
+                state.builder.ovenTemp = "";
+                state.builder.ovenMinutes = "";
+              }
+              if (!builderHasInstruction("Till temperatur")) {
+                state.builder.targetTemp = "";
+              }
+
+              renderBuilder();
+              renderPreview();
+            },
+            index > 0 ? () => {
+              moveItem(state.builder.instructions, index, index - 1);
+              renderBuilder();
+            } : null,
+            index < state.builder.instructions.length - 1 ? () => {
+              moveItem(state.builder.instructions, index, index + 1);
+              renderBuilder();
+            } : null
+          ));
+        });
+      }
+
+      renderSpecialOptions();
+      renderBuilderPreview();
+      saveStepBtn.disabled = !(
+        state.builder.ingredients.length ||
+        state.builder.instructions.length ||
+        state.builder.customInstruction.trim()
+      );
+    }
+
+    function appendInstructionLines(container, step){
+      if (step.instructions.length) {
+        step.instructions.forEach(item => {
+          let text = item.label;
+
+          if (item.label === "Vila" && Number(step.restMinutes) > 0) {
+            text = `Vila – ${step.restMinutes} min`;
+          }
+
+          if (item.label === "Ställ in i ugnen") {
+            const temp = step.ovenTemp ? `${step.ovenTemp}°` : "";
+            const mins = step.ovenMinutes ? `${step.ovenMinutes} min` : "";
+            if (temp || mins) {
+              text = `Ugn${temp || mins ? " – " : ""}${temp}${temp && mins ? " i " : ""}${mins}`;
+            }
+          }
+
+          if (item.label === "Till temperatur" && step.targetTemp) {
+            text = `Till temperatur – ${step.targetTemp}°`;
+          }
+
+          const line = document.createElement("div");
+          line.className = "instruction-line";
+          line.innerHTML = `<span class="icon-chip">${getIconMarkup(item.icon)}</span><span>${escapeHtml(text)}</span>`;
+          container.appendChild(line);
+        });
+      } else if (!step.customInstruction.trim()) {
+        const line = document.createElement("div");
+        line.className = "instruction-line";
+        line.textContent = "Ingen instruktion vald";
+        container.appendChild(line);
+      }
+
+      if (step.customInstruction.trim()) {
+        const line = document.createElement("div");
+        line.className = "instruction-line";
+        line.innerHTML = `<span class="icon-chip">📝</span><span>${escapeHtml(step.customInstruction.trim())}</span>`;
+        container.appendChild(line);
+      }
+    }
+
+    function renderBuilderPreview(){
+      builderPreviewHostEl.innerHTML = `<h3>Så här ser aktuellt steg ut</h3>`;
+
+      const previewCard = document.createElement("div");
+      previewCard.className = "step-preview-card";
+
+      const left = document.createElement("div");
+      left.className = "step-preview-left";
+      const ul = document.createElement("ul");
+
+      if (state.builder.ingredients.length) {
+        state.builder.ingredients.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = getIngredientDisplayLabel(item);
+          ul.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.textContent = "Inga ingredienser";
+        ul.appendChild(li);
+      }
+      left.appendChild(ul);
+
+      const link = document.createElement("div");
+      link.className = "step-preview-link";
+      link.textContent = state.builder.ingredients.length >= 2 ? "}" : "→";
+
+      const right = document.createElement("div");
+      right.className = "step-preview-right";
+      appendInstructionLines(right, state.builder);
+
+      previewCard.appendChild(left);
+      previewCard.appendChild(link);
+      previewCard.appendChild(right);
+      builderPreviewHostEl.appendChild(previewCard);
+    }
+
+    function saveBuilderToRecipe(){
+      const hasContent =
+        state.builder.ingredients.length ||
+        state.builder.instructions.length ||
+        state.builder.customInstruction.trim();
+
+      if (!hasContent) return;
+
+      state.recipeSteps.push({
+        id: "saved-step-" + savedStepCounter++,
+        ingredients: state.builder.ingredients.map(item => ({ ...item, leftoverId: null })),
+        instructions: state.builder.instructions.map(item => ({ ...item })),
+        customInstruction: state.builder.customInstruction.trim(),
+        restMinutes: Number(state.builder.restMinutes) || 0,
+        ovenTemp: state.builder.ovenTemp || "",
+        ovenMinutes: state.builder.ovenMinutes || "",
+        targetTemp: state.builder.targetTemp || ""
+      });
+
+      resetBuilderAfterSave();
+      renderSavedSteps();
+      renderPreview();
+      renderBuilder();
+      renderBank();
+    }
+
+    function renderSavedSteps(){
+      savedStepsEl.innerHTML = "";
+
+      if (!state.recipeSteps.length) {
+        savedStepsEl.innerHTML = `<div class="preview-empty">Inga steg sparade ännu. Bygg ett steg ovanför och klicka på <strong>Spara till recept</strong>.</div>`;
+        return;
+      }
+
+      state.recipeSteps.forEach((step, index) => {
+        const card = document.createElement("div");
+        card.className = "saved-step-card";
+
+        const head = document.createElement("div");
+        head.className = "saved-step-head";
+
+        const title = document.createElement("div");
+        title.className = "saved-step-title";
+        title.textContent = `Steg ${index + 1}`;
+
+        const actions = document.createElement("div");
+        actions.className = "saved-step-actions";
+
+        if (index > 0) {
+          const upBtn = document.createElement("button");
+          upBtn.className = "mini-btn secondary";
+          upBtn.textContent = "↑";
+          upBtn.addEventListener("click", () => {
+            moveItem(state.recipeSteps, index, index - 1);
+            renderSavedSteps();
+            renderPreview();
+          });
+          actions.appendChild(upBtn);
+        }
+
+        if (index < state.recipeSteps.length - 1) {
+          const downBtn = document.createElement("button");
+          downBtn.className = "mini-btn secondary";
+          downBtn.textContent = "↓";
+          downBtn.addEventListener("click", () => {
+            moveItem(state.recipeSteps, index, index + 1);
+            renderSavedSteps();
+            renderPreview();
+          });
+          actions.appendChild(downBtn);
+        }
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "mini-btn secondary";
+        editBtn.textContent = "Redigera";
+        editBtn.addEventListener("click", () => {
+          state.builder.ingredients.forEach(item => {
+            restoreBuilderIngredientToBank(item);
+          });
+
+          state.builder.ingredients = step.ingredients.map(item => ({
+            ...item,
+            builderId: "builder-ingredient-" + builderIngredientCounter++,
+            leftoverId: null
+          }));
+          state.builder.instructions = step.instructions.map(item => ({ ...item }));
+          state.builder.customInstruction = step.customInstruction || "";
+          state.builder.restMinutes = Number(step.restMinutes) || 0;
+          state.builder.ovenTemp = step.ovenTemp || "";
+          state.builder.ovenMinutes = step.ovenMinutes || "";
+          state.builder.targetTemp = step.targetTemp || "";
+
+          builderCustomInstructionEl.value = state.builder.customInstruction;
+
+          state.recipeSteps.splice(index, 1);
+          renderAll();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        actions.appendChild(editBtn);
+
+        head.appendChild(title);
+        head.appendChild(actions);
+
+        const previewBox = document.createElement("div");
+        previewBox.className = "step-preview-box";
+        previewBox.innerHTML = `<h3>Så här ser steget ut i receptet</h3>`;
+
+        const previewCard = document.createElement("div");
+        previewCard.className = "step-preview-card";
+
+        const left = document.createElement("div");
+        left.className = "step-preview-left";
+        const ul = document.createElement("ul");
+
+        if (step.ingredients.length) {
+          step.ingredients.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = getIngredientDisplayLabel(item);
+            ul.appendChild(li);
+          });
+        } else {
+          const li = document.createElement("li");
+          li.textContent = "Inga ingredienser";
+          ul.appendChild(li);
+        }
+        left.appendChild(ul);
+
+        const link = document.createElement("div");
+        link.className = "step-preview-link";
+        link.textContent = step.ingredients.length >= 2 ? "}" : "→";
+
+        const right = document.createElement("div");
+        right.className = "step-preview-right";
+        appendInstructionLines(right, step);
+
+        previewCard.appendChild(left);
+        previewCard.appendChild(link);
+        previewCard.appendChild(right);
+        previewBox.appendChild(previewCard);
+
+        card.appendChild(head);
+        card.appendChild(previewBox);
+        savedStepsEl.appendChild(card);
+      });
+    }
+
+    function renderBank(){
+      renderBankList(ingredientBankEl, state.ingredientBank);
+      renderBankList(instructionBankEl, state.instructionBank);
+    }
+
+    function renderPreview(){
+      recipePreviewEl.innerHTML = "";
+      recipeTitlePreview.innerHTML = "";
+
+      const title = (state.title || recipeTitleInput.value).trim();
+      if (title) {
+        recipeTitlePreview.innerHTML = `
+          <div class="recipe-title-card">
+            <h3>${escapeHtml(title)}</h3>
+          </div>
+        `;
+      }
+
+      if (!state.recipeSteps.length) {
+        recipePreviewEl.innerHTML = `<div class="preview-empty">Spara steg till receptet för att visa elevversionen här.</div>`;
+        return;
+      }
+
+      state.recipeSteps.forEach((step) => {
+        const stepEl = document.createElement("div");
+        stepEl.className = "preview-step";
+
+        const ingredientsEl = document.createElement("div");
+        ingredientsEl.className = "preview-ingredients";
+        const ul = document.createElement("ul");
+
+        if (step.ingredients.length) {
+          step.ingredients.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = getIngredientDisplayLabel(item);
+            ul.appendChild(li);
+          });
+        } else {
+          const li = document.createElement("li");
+          li.textContent = "Inga ingredienser";
+          ul.appendChild(li);
+        }
+        ingredientsEl.appendChild(ul);
+
+        const arrowEl = document.createElement("div");
+        arrowEl.className = "preview-arrow";
+        arrowEl.textContent = step.ingredients.length >= 2 ? "}" : "→";
+
+        const instructionBox = document.createElement("div");
+        instructionBox.className = "preview-instruction";
+        appendInstructionLines(instructionBox, step);
+
+        stepEl.appendChild(ingredientsEl);
+        stepEl.appendChild(arrowEl);
+        stepEl.appendChild(instructionBox);
+
+        recipePreviewEl.appendChild(stepEl);
+      });
+    }
+
+    function renderAll(){
+      renderBank();
+      renderBuilder();
+      renderSavedSteps();
+      renderPreview();
+    }
+
+    function clearBank(){
+      resetIngredientBankWithAlwaysAvailable();
+      state.instructionBank = [...defaultInstructionLibrary.map(item => ({ ...item }))];
+      renderAll();
+    }
+
+    function resetWholeRecipe(){
+      state.title = "";
+      recipeTitleInput.value = "";
+      importText.value = "";
+      recipeUrlInput.value = "";
+      state.recipeSteps = [];
+      setUrlStatus("Ingen länk importerad ännu.", "");
+      clearBuilder();
+      resetIngredientBankWithAlwaysAvailable();
+      state.instructionBank = [...defaultInstructionLibrary.map(item => ({ ...item }))];
+      renderAll();
+    }
+
+    function saveRecipeToFile(){
+      const payload = {
+        title: (state.title || recipeTitleInput.value || "").trim(),
+        ingredientBank: state.ingredientBank,
+        instructionBank: state.instructionBank,
+        recipeSteps: state.recipeSteps,
+        exportedAt: new Date().toISOString()
+      };
+
+      const safeTitle = (payload.title || "recept").toLowerCase()
+        .replace(/[^\wåäö-]+/gi, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeTitle || "recept"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(text){
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    recipeTitleInput.addEventListener("input", () => {
+      state.title = recipeTitleInput.value;
+      renderPreview();
+    });
+
+    builderCustomInstructionEl.addEventListener("input", () => {
+      state.builder.customInstruction = builderCustomInstructionEl.value;
+      renderBuilderPreview();
+    });
+
+    parseRecipeBtn.addEventListener("click", () => {
+      const parsed = parseRecipeText(importText.value);
+      if (!parsed) return;
+      addImportedContentToBanks(parsed);
+    });
+
+    importIngredientsBtn.addEventListener("click", () => {
+      addIngredientsOnlyToBank(importText.value);
+    });
+
+    clearImportBtn.addEventListener("click", () => {
+      importText.value = "";
+    });
+
+    clearBankBtn.addEventListener("click", () => {
+      clearBank();
+    });
+
+    clearBuilderBtn.addEventListener("click", () => {
+      clearBuilder();
+      renderBank();
+    });
+
+    saveStepBtn.addEventListener("click", () => {
+      saveBuilderToRecipe();
+    });
+
+    printBtn.addEventListener("click", () => {
+      window.print();
+    });
+
+    printBtnBottom.addEventListener("click", () => {
+      window.print();
+    });
+
+    saveRecipeBtn.addEventListener("click", () => {
+      saveRecipeToFile();
+    });
+
+    saveRecipeBtnBottom.addEventListener("click", () => {
+      saveRecipeToFile();
+    });
+
+    resetRecipeBtn.addEventListener("click", () => {
+      resetWholeRecipe();
+    });
+
+    resetRecipeBtnBottom.addEventListener("click", () => {
+      resetWholeRecipe();
+    });
+
+    importUrlBtn.addEventListener("click", () => {
+      importFromUrl();
+    });
+
+    resetIngredientBankWithAlwaysAvailable();
+    renderAll();
+  </script>
+</body>
+</html>
+<!-- slut SEKTION 1: RECEPTAPP BYGGBANK MED URL-IMPORT -->
